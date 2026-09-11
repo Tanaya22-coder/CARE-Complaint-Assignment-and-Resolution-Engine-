@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard - Project CARE</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .grid-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .ticket-card { background: #fff; border-left: 4px solid var(--primary); padding: 15px; margin-bottom: 12px; border-radius: 4px; border: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Top Navigation Header -->
+        <div class="header card" style="padding: 16px 24px;">
+            <div>
+                <h2 id="welcomeText" style="color: var(--primary);">Welcome, Student</h2>
+                <small id="userMeta" style="color: var(--text-muted);">ID: STU-2026-001</small>
+            </div>
+            <button onclick="logout()" style="background-color: var(--danger);">Logout</button>
+        </div>
+
+        <div class="grid-layout">
+            <!-- Left Column: Create Ticket Form -->
+            <div class="card">
+                <h3>Submit New Ticket</h3>
+                <form id="complaintForm" style="margin-top: 15px;">
+                    <label>Category</label>
+                    <select id="category" required>
+                        <option value="Hostel & Maintenance">Hostel & Maintenance</option>
+                        <option value="Campus IT & Network">Campus IT & Network</option>
+                        <option value="Academic Affairs">Academic Affairs</option>
+                        <option value="Canteen & Dining">Canteen & Dining</option>
+                    </select>
+
+                    <label>Sub-Category / Issue</label>
+                    <input type="text" id="subCategory" required placeholder="e.g., Water Supply Issue">
+
+                    <label>Priority Level</label>
+                    <select id="priority">
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM" selected>Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="URGENT">Urgent</option>
+                    </select>
+
+                    <label>Location / Room No</label>
+                    <input type="text" id="location" required placeholder="e.g., B-Block, Room 304">
+
+                    <label>Title Summary</label>
+                    <input type="text" id="title" required placeholder="Brief summary of problem">
+
+                    <label>Detailed Description</label>
+                    <textarea id="description" rows="3" required placeholder="Describe issue in detail..."></textarea>
+
+                    <button type="submit" style="width: 100%;">Raise Complaint Ticket</button>
+                </form>
+            </div>
+
+            <!-- Right Column: Active Tickets & Tracking -->
+            <div class="card">
+                <h3>My Complaints & Track Status</h3>
+                <div id="ticketsContainer" style="margin-top: 15px;">
+                    <p style="color: var(--text-muted);">Loading complaints...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('care_user'));
+        if (!user || user.role !== 'STUDENT') {
+            window.location.href = 'login.html';
+        }
+
+        document.getElementById('welcomeText').innerText = `Welcome, ${user.name}`;
+        document.getElementById('userMeta').innerText = `Student ID: ${user.user_id} | Email: ${user.email}`;
+
+        function logout() {
+            localStorage.removeItem('care_user');
+            window.location.href = 'login.html';
+        }
+
+        async function loadStudentTickets() {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/complaints/student/${user.id}`);
+                const tickets = await res.json();
+                const container = document.getElementById('ticketsContainer');
+
+                if (tickets.length === 0) {
+                    container.innerHTML = `<p style="color: var(--text-muted);">No complaints raised yet.</p>`;
+                    return;
+                }
+
+                container.innerHTML = tickets.map(t => `
+                    <div class="ticket-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong>${t.ticket_id} - ${t.title}</strong>
+                            <span class="badge badge-${t.status.toLowerCase().replace('_','')}">${t.status}</span>
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0;">${t.department_name} | Location: ${t.location}</p>
+                        <p style="font-size: 14px;">${t.description}</p>
+                        ${t.status === 'PENDING_FEEDBACK' ? `
+                            <div style="margin-top: 10px; background: #fffbeb; padding: 10px; border-radius: 4px; border: 1px solid #fde68a;">
+                                <p style="font-size: 13px; font-weight: 600; color: #b45309;">Staff marked this resolved. Please submit feedback to close ticket:</p>
+                                <select id="rating-${t.id}" style="margin: 5px 0;">
+                                    <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                                    <option value="4">⭐⭐⭐⭐ (4 - Good)</option>
+                                    <option value="3">⭐⭐⭐ (3 - Average)</option>
+                                    <option value="2">⭐⭐ (2 - Poor)</option>
+                                    <option value="1">⭐ (1 - Unsatisfied)</option>
+                                </select>
+                                <button onclick="submitFeedback(${t.id}, true)" style="background: var(--success); padding: 6px 12px; font-size: 12px;">Satisfied & Close</button>
+                                <button onclick="submitFeedback(${t.id}, false)" style="background: var(--danger); padding: 6px 12px; font-size: 12px; margin-left: 5px;">Unsatisfied (Reopen)</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to load tickets', err);
+            }
+        }
+
+        document.getElementById('complaintForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                student_id: user.id,
+                category: document.getElementById('category').value,
+                sub_category: document.getElementById('subCategory').value,
+                priority: document.getElementById('priority').value,
+                location: document.getElementById('location').value,
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value
+            };
+
+            const res = await fetch('http://127.0.0.1:8000/api/complaints/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert('Complaint submitted successfully!');
+                document.getElementById('complaintForm').reset();
+                loadStudentTickets();
+            } else {
+                alert('Failed to submit complaint');
+            }
+        });
+
+        async function submitFeedback(complaintId, isSatisfied) {
+            const rating = parseInt(document.getElementById(`rating-${complaintId}`).value);
+            const payload = {
+                student_id: user.id,
+                rating: rating,
+                comments: isSatisfied ? "Satisfied with resolution" : "Issue persists, reopened",
+                is_satisfied: isSatisfied
+            };
+
+            const res = await fetch(`http://127.0.0.1:8000/api/complaints/${complaintId}/feedback`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert(isSatisfied ? "Thank you! Ticket successfully closed." : "Ticket reopened for admin review.");
+                loadStudentTickets();
+            } else {
+                alert('Error submitting feedback');
+            }
+        }
+
+        // Initialize on page load
+        loadStudentTickets();
+    </script>
+</body>
+</html>

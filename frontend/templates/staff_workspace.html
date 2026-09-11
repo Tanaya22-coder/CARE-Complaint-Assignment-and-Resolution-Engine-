@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Workspace - Project CARE</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .ticket-list { display: flex; flex-direction: column; gap: 15px; }
+        .action-box { background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Staff Top Navigation -->
+        <div class="header card" style="padding: 16px 24px;">
+            <div>
+                <h2 id="staffTitle" style="color: var(--primary);">Staff Workspace</h2>
+                <small id="staffMeta" style="color: var(--text-muted);">Department Queue</small>
+            </div>
+            <button onclick="logout()" style="background-color: var(--danger);">Logout</button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">Assigned Department Complaints</h3>
+            <div id="deptTicketsContainer" class="ticket-list">
+                <p style="color: var(--text-muted);">Loading department tickets...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('care_user'));
+        if (!user || user.role !== 'STAFF') {
+            window.location.href = 'login.html';
+        }
+
+        document.getElementById('staffTitle').innerText = `Workspace: ${user.name}`;
+        document.getElementById('staffMeta').innerText = `Role: ${user.designation || 'Staff'} | Dept: ${user.department_name || 'Field Operations'}`;
+
+        function logout() {
+            localStorage.removeItem('care_user');
+            window.location.href = 'login.html';
+        }
+
+        async function loadDepartmentTickets() {
+            try {
+                const deptId = user.department_id || 1;
+                const res = await fetch(`http://127.0.0.1:8000/api/admin/staff/department/${deptId}`);
+                const tickets = await res.json();
+                const container = document.getElementById('deptTicketsContainer');
+
+                if (tickets.length === 0) {
+                    container.innerHTML = `<p style="color: var(--text-muted);">No tickets currently assigned to your department.</p>`;
+                    return;
+                }
+
+                container.innerHTML = tickets.map(t => `
+                    <div class="card" style="margin-bottom: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="font-size: 16px;">${t.ticket_id}: ${t.title}</strong>
+                                <span style="margin-left: 8px; font-size: 12px; color: var(--text-muted);">By: ${t.student_name}</span>
+                            </div>
+                            <span class="badge badge-${t.status.toLowerCase().replace('_','')}">${t.status}</span>
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0;">Location: <strong>${t.location}</strong> | Category: ${t.sub_category}</p>
+                        <p style="font-size: 14px; background: #f1f5f9; padding: 10px; border-radius: 4px;">${t.description}</p>
+                        
+                        <div class="action-box">
+                            <label style="font-size: 12px; font-weight: bold;">Update Ticket Progress:</label>
+                            <div style="display: flex; gap: 10px; margin-top: 6px;">
+                                <select id="status-${t.id}" style="margin: 0; flex: 1;">
+                                    <option value="IN_PROGRESS" ${t.status === 'IN_PROGRESS' ? 'selected' : ''}>Mark IN PROGRESS</option>
+                                    <option value="PENDING_FEEDBACK" ${t.status === 'PENDING_FEEDBACK' ? 'selected' : ''}>Mark RESOLVED (Pending Student Sign-off)</option>
+                                </select>
+                            </div>
+                            <input type="text" id="notes-${t.id}" placeholder="Enter resolution notes (e.g., Replaced water pump motor in Block B)" style="margin-top: 8px; margin-bottom: 8px;">
+                            <button onclick="updateTicket(${t.id})" style="padding: 6px 14px; font-size: 13px;">Save Progress Update</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to fetch staff tickets', err);
+            }
+        }
+
+        async function updateTicket(complaintId) {
+            const status = document.getElementById(`status-${complaintId}`).value;
+            const resolution_notes = document.getElementById(`notes-${complaintId}`).value.trim();
+
+            if (!resolution_notes) {
+                alert('Please enter resolution notes describing the action taken.');
+                return;
+            }
+
+            const payload = {
+                staff_id: user.id,
+                status: status,
+                resolution_notes: resolution_notes
+            };
+
+            const res = await fetch(`http://127.0.0.1:8000/api/admin/complaints/${complaintId}/progress`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert('Ticket progress updated!');
+                loadDepartmentTickets();
+            } else {
+                alert('Failed to update ticket status.');
+            }
+        }
+
+        loadDepartmentTickets();
+    </script>
+</body>
+</html>
