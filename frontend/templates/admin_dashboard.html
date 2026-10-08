@@ -1,187 +1,560 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Admin Command Center - Project CARE</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
     <style>
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
-        .metric-card { text-align: center; padding: 15px; }
-        .metric-card h3 { font-size: 28px; color: var(--primary); margin-top: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
-        th { background: #f8fafc; color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .metric-card h3 {
+            font-size: 28px;
+            color: var(--primary);
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="container">
-        <!-- Admin Navigation Header -->
-        <div class="header card" style="padding: 16px 24px;">
-            <div>
-                <h2 id="adminTitle" style="color: var(--primary);">Admin Command Center</h2>
-                <small id="adminMeta" style="color: var(--text-muted);">Central Administration & Analytics</small>
-            </div>
-            <button onclick="logout()" style="background-color: var(--danger);">Logout</button>
+<div class="container">
+
+    <!-- Admin Navigation Header -->
+    <div class="header card" style="padding: 16px 24px;">
+        <div>
+            <h2 id="adminTitle" style="color: var(--primary);">
+                Admin Command Center
+            </h2>
+
+            <small id="adminMeta" style="color: var(--text-muted);">
+                Central Administration & Analytics
+            </small>
         </div>
 
-        <!-- System Analytics Summary (Resume Highlight) -->
-        <div class="metrics-grid">
-            <div class="card metric-card">
-                <small>Open Tickets</small>
-                <h3 id="openCount">0</h3>
-            </div>
-            <div class="card metric-card">
-                <small>In Progress</small>
-                <h3 id="progressCount" style="color: var(--warning);">0</h3>
-            </div>
-            <div class="card metric-card">
-                <small>Resolved Tickets</small>
-                <h3 id="resolvedCount" style="color: var(--success);">0</h3>
-            </div>
-            <div class="card metric-card">
-                <small>Reopened (Bottlenecks)</small>
-                <h3 id="reopenedCount" style="color: var(--danger);">0</h3>
-            </div>
-        </div>
-
-        <!-- Department Performance & CSAT Matrix -->
-        <!-- PLACE THIS JUST ABOVE <div class="card"> Department Performance... -->
-<div class="card" style="margin-bottom: 25px;">
-    <h3>Create New Staff / Student Account</h3>
-    <form id="createUserForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px;">
-        <input type="text" id="newUserId" placeholder="User ID (e.g. STF-105 or STU-2026-099)" required>
-        <input type="text" id="newName" placeholder="Full Name" required>
-        <input type="email" id="newEmail" placeholder="Email Address" required>
-        <input type="password" id="newPassword" placeholder="Initial Password" required>
-        
-        <select id="newRole" required>
-            <option value="">Select Account Role</option>
-            <option value="STUDENT">Student</option>
-            <option value="STAFF">Staff</option>
-            <option value="ADMIN">Admin</option>
-        </select>
-
-        <select id="newDept">
-            <option value="">Select Department (For Staff)</option>
-            <option value="1">Campus IT & Network</option>
-            <option value="2">Hostel & Accommodation</option>
-            <option value="3">Campus Canteen & Mess</option>
-            <option value="4">Electrical & Plumbing Maintenance</option>
-        </select>
-
-        <input type="text" id="newDesignation" placeholder="Designation (e.g. Warden / Tech)" style="grid-column: span 2;">
-        
-        <button type="submit" style="grid-column: span 2; background-color: var(--primary);">Register User Account</button>
-    </form>
-    <p id="registerMsg" style="margin-top: 10px; font-size: 14px;"></p>
+        <button
+            onclick="logout()"
+            style="background-color: var(--danger);">
+            Logout
+        </button>
     </div>
 
-        <div class="card">
-            <h3>Department Performance & CSAT Ratings</h3>
-            <table>
-                <thead>
+
+    <!-- System Analytics Summary -->
+    <div class="metrics-grid">
+
+        <div class="card metric-card">
+            <small>Open Tickets</small>
+            <h3 id="openCount">0</h3>
+        </div>
+
+        <div class="card metric-card">
+            <small>In Progress</small>
+            <h3 id="progressCount" style="color: var(--warning);">
+                0
+            </h3>
+        </div>
+
+        <div class="card metric-card">
+            <small>Resolved Tickets</small>
+            <h3 id="resolvedCount" style="color: var(--success);">
+                0
+            </h3>
+        </div>
+
+        <div class="card metric-card">
+            <small>Reopened (Bottlenecks)</small>
+            <h3 id="reopenedCount" style="color: var(--danger);">
+                0
+            </h3>
+        </div>
+
+    </div>
+
+
+    <!-- Create New User -->
+    <div class="card" style="margin-bottom: 25px;">
+
+        <h3>Create New Staff / Student Account</h3>
+
+        <form
+            id="createUserForm"
+            style="
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-top: 15px;
+            "
+        >
+
+            <input
+                type="text"
+                id="newUserId"
+                placeholder="User ID (e.g. STF-105 or STU-2026-099)"
+                required
+            >
+
+            <input
+                type="text"
+                id="newName"
+                placeholder="Full Name"
+                required
+            >
+
+            <input
+                type="email"
+                id="newEmail"
+                placeholder="Email Address"
+                required
+            >
+
+            <input
+                type="password"
+                id="newPassword"
+                placeholder="Initial Password"
+                required
+            >
+
+            <select id="newRole" required>
+                <option value="">Select Account Role</option>
+                <option value="STUDENT">Student</option>
+                <option value="STAFF">Staff</option>
+                <option value="ADMIN">Admin</option>
+            </select>
+
+            <select id="newDept">
+                <option value="">
+                    Select Department (For Staff)
+                </option>
+
+                <option value="1">
+                    Campus IT & Network
+                </option>
+
+                <option value="2">
+                    Hostel & Accommodation
+                </option>
+
+                <option value="3">
+                    Campus Canteen & Mess
+                </option>
+
+                <option value="4">
+                    Electrical & Plumbing Maintenance
+                </option>
+            </select>
+
+            <input
+                type="text"
+                id="newDesignation"
+                placeholder="Designation (e.g. Warden / Tech)"
+                style="grid-column: span 2;"
+            >
+
+            <button
+                type="submit"
+                style="
+                    grid-column: span 2;
+                    background-color: var(--primary);
+                "
+            >
+                Register User Account
+            </button>
+
+        </form>
+
+        <p
+            id="registerMsg"
+            style="margin-top: 10px; font-size: 14px;"
+        ></p>
+
+    </div>
+
+
+    <!-- Department Performance -->
+    <div class="card">
+
+        <h3>Department Performance & CSAT Ratings</h3>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Total Evaluated Feedbacks</th>
+                    <th>Average CSAT Score</th>
+                    <th>Health Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="deptPerformanceTable">
+
+                <tr>
+                    <td
+                        colspan="4"
+                        style="color: var(--text-muted);"
+                    >
+                        Loading analytics data...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // --------------------------------------------------
+    // Check logged-in admin
+    // --------------------------------------------------
+
+    const user = JSON.parse(
+        localStorage.getItem('care_user')
+    );
+
+    if (!user || user.role !== 'ADMIN') {
+        window.location.href = '/';
+    }
+
+
+    // --------------------------------------------------
+    // Display admin information
+    // --------------------------------------------------
+
+    document.getElementById('adminTitle').innerText =
+        `Admin Portal: ${user.name}`;
+
+    document.getElementById('adminMeta').innerText =
+        `Designation: ${user.designation || 'HOD'} | Full Access Enabled`;
+
+
+    // --------------------------------------------------
+    // Logout
+    // --------------------------------------------------
+
+    function logout() {
+
+        localStorage.removeItem('care_user');
+
+        window.location.href = '/';
+    }
+
+
+    // --------------------------------------------------
+    // Load analytics
+    // --------------------------------------------------
+
+    async function loadAnalytics() {
+
+        try {
+
+            const res = await fetch(
+                '/api/admin/analytics/metrics'
+            );
+
+            if (!res.ok) {
+                throw new Error(
+                    `Analytics API returned ${res.status}`
+                );
+            }
+
+            const data = await res.json();
+
+
+            // Status breakdown
+            const statusMap =
+                data.status_breakdown || {};
+
+            document.getElementById('openCount').innerText =
+                statusMap['OPEN'] || 0;
+
+            document.getElementById('progressCount').innerText =
+                statusMap['IN_PROGRESS'] || 0;
+
+            document.getElementById('resolvedCount').innerText =
+                statusMap['RESOLVED'] || 0;
+
+            document.getElementById('reopenedCount').innerText =
+                statusMap['REOPENED'] || 0;
+
+
+            // Department performance
+            const tableBody =
+                document.getElementById(
+                    'deptPerformanceTable'
+                );
+
+            if (
+                !data.department_performance ||
+                data.department_performance.length === 0
+            ) {
+
+                tableBody.innerHTML = `
                     <tr>
-                        <th>Department</th>
-                        <th>Total Evaluated Feedbacks</th>
-                        <th>Average CSAT Score</th>
-                        <th>Health Status</th>
+                        <td
+                            colspan="4"
+                            style="color: var(--text-muted);"
+                        >
+                            No student feedback records collected yet.
+                        </td>
                     </tr>
-                </thead>
-                <tbody id="deptPerformanceTable">
-                    <tr><td colspan="4" style="color: var(--text-muted);">Loading analytics data...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+                `;
 
-    <script>
-        const user = JSON.parse(localStorage.getItem('care_user'));
-        if (!user || user.role !== 'ADMIN') {
-            window.location.href = 'login.html';
+                return;
+            }
+
+
+            tableBody.innerHTML =
+                data.department_performance
+                    .map(d => {
+
+                        const rating =
+                            d.avg_rating
+                                ? d.avg_rating.toFixed(1)
+                                : 'N/A';
+
+                        let healthBadge =
+                            '<span class="badge badge-resolved">Excellent</span>';
+
+                        if (
+                            rating !== 'N/A' &&
+                            rating < 3.0
+                        ) {
+
+                            healthBadge =
+                                '<span class="badge badge-open">Critical</span>';
+
+                        } else if (
+                            rating !== 'N/A' &&
+                            rating < 4.0
+                        ) {
+
+                            healthBadge =
+                                '<span class="badge badge-progress">Needs Improvement</span>';
+                        }
+
+
+                        return `
+                            <tr>
+                                <td>
+                                    <strong>
+                                        ${d.department}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    ${d.total_feedbacks} Ratings
+                                </td>
+
+                                <td>
+                                    ⭐
+                                    <strong>
+                                        ${rating} / 5.0
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    ${healthBadge}
+                                </td>
+                            </tr>
+                        `;
+
+                    })
+                    .join('');
+
+        } catch (err) {
+
+            console.error(
+                'Failed to load admin analytics metrics',
+                err
+            );
+
         }
 
-        document.getElementById('adminTitle').innerText = `Admin Portal: ${user.name}`;
-        document.getElementById('adminMeta').innerText = `Designation: ${user.designation || 'HOD'} | Full Access Enabled`;
+    }
 
-        function logout() {
-            localStorage.removeItem('care_user');
-            window.location.href = 'login.html';
-        }
 
-        async function loadAnalytics() {
-            try {
-                const res = await fetch('http://127.0.0.1:8000/api/admin/analytics/metrics');
-                const data = await res.json();
+    // Load analytics when page opens
+    loadAnalytics();
 
-                // Populate status breakdown counts
-                const statusMap = data.status_breakdown || {};
-                document.getElementById('openCount').innerText = statusMap['OPEN'] || 0;
-                document.getElementById('progressCount').innerText = statusMap['IN_PROGRESS'] || 0;
-                document.getElementById('resolvedCount').innerText = statusMap['RESOLVED'] || 0;
-                document.getElementById('reopenedCount').innerText = statusMap['REOPENED'] || 0;
 
-                // Populate CSAT performance table
-                const tableBody = document.getElementById('deptPerformanceTable');
-                if (!data.department_performance || data.department_performance.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="4" style="color: var(--text-muted);">No student feedback records collected yet.</td></tr>`;
-                    return;
+    // --------------------------------------------------
+    // Create user
+    // --------------------------------------------------
+
+    document
+        .getElementById('createUserForm')
+        .addEventListener(
+            'submit',
+            async (e) => {
+
+                e.preventDefault();
+
+                const msg =
+                    document.getElementById(
+                        'registerMsg'
+                    );
+
+
+                const payload = {
+
+                    user_id:
+                        document
+                            .getElementById('newUserId')
+                            .value
+                            .trim(),
+
+                    name:
+                        document
+                            .getElementById('newName')
+                            .value
+                            .trim(),
+
+                    email:
+                        document
+                            .getElementById('newEmail')
+                            .value
+                            .trim(),
+
+                    password:
+                        document
+                            .getElementById('newPassword')
+                            .value,
+
+                    role:
+                        document
+                            .getElementById('newRole')
+                            .value,
+
+                    department_id:
+                        document
+                            .getElementById('newDept')
+                            .value
+                            ? parseInt(
+                                document
+                                    .getElementById('newDept')
+                                    .value
+                            )
+                            : null,
+
+                    designation:
+                        document
+                            .getElementById('newDesignation')
+                            .value
+                            .trim() || null
+                };
+
+
+                try {
+
+                    const res = await fetch(
+                        '/api/admin/users/create',
+                        {
+                            method: 'POST',
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            },
+
+                            body: JSON.stringify(payload)
+                        }
+                    );
+
+
+                    const data =
+                        await res.json();
+
+
+                    if (res.ok) {
+
+                        msg.style.color =
+                            'var(--success)';
+
+                        msg.innerText =
+                            data.message;
+
+                        document
+                            .getElementById(
+                                'createUserForm'
+                            )
+                            .reset();
+
+                    } else {
+
+                        msg.style.color =
+                            'var(--danger)';
+
+                        msg.innerText =
+                            data.detail ||
+                            'Failed to create user.';
+                    }
+
+
+                } catch (err) {
+
+                    console.error(
+                        'Failed to create user',
+                        err
+                    );
+
+                    msg.style.color =
+                        'var(--danger)';
+
+                    msg.innerText =
+                        'Unable to connect to the server.';
                 }
 
-                tableBody.innerHTML = data.department_performance.map(d => {
-                    const rating = d.avg_rating ? d.avg_rating.toFixed(1) : 'N/A';
-                    let healthBadge = '<span class="badge badge-resolved">Excellent</span>';
-                    if (rating < 3.0) healthBadge = '<span class="badge badge-open">Critical</span>';
-                    else if (rating < 4.0) healthBadge = '<span class="badge badge-progress">Needs Improvement</span>';
-
-                    return `
-                        <tr>
-                            <td><strong>${d.department}</strong></td>
-                            <td>${d.total_feedbacks} Ratings</td>
-                            <td>⭐ <strong>${rating} / 5.0</strong></td>
-                            <td>${healthBadge}</td>
-                        </tr>
-                    `;
-                }).join('');
-            } catch (err) {
-                console.error('Failed to load admin analytics metrics', err);
             }
-        }
+        );
 
-        loadAnalytics();
+</script>
 
-        // ADD THIS AT THE BOTTOM OF YOUR EXISTING <script> TAG
-document.getElementById('createUserForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const msg = document.getElementById('registerMsg');
-    
-    const payload = {
-        user_id: document.getElementById('newUserId').value.trim(),
-        name: document.getElementById('newName').value.trim(),
-        email: document.getElementById('newEmail').value.trim(),
-        password: document.getElementById('newPassword').value,
-        role: document.getElementById('newRole').value,
-        department_id: document.getElementById('newDept').value ? parseInt(document.getElementById('newDept').value) : null,
-        designation: document.getElementById('newDesignation').value.trim() || null
-    };
-
-    const res = await fetch('http://127.0.0.1:8000/api/admin/users/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-        msg.style.color = "var(--success)";
-        msg.innerText = data.message;
-        document.getElementById('createUserForm').reset();
-    } else {
-        msg.style.color = "var(--danger)";
-        msg.innerText = data.detail || "Failed to create user.";
-    }
-});
-    </script>
 </body>
 </html>
+```
