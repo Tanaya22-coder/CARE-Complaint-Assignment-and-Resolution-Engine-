@@ -28,66 +28,184 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="login-box card">
-        <h2 style="margin-bottom: 8px; color: var(--primary);">Project CARE</h2>
-        <p style="color: var(--text-muted); margin-bottom: 20px;">Complaint Assignment & Resolution Engine</p>
-        
+
+        <h2 style="margin-bottom: 8px; color: var(--primary);">
+            Project CARE
+        </h2>
+
+        <p style="color: var(--text-muted); margin-bottom: 20px;">
+            Complaint Assignment & Resolution Engine
+        </p>
+
         <form id="loginForm">
+
             <label>User ID (e.g., STU-2026-001)</label>
-            <input type="text" id="userId" required placeholder="Enter your ID">
-            
+
+            <input
+                type="text"
+                id="userId"
+                required
+                placeholder="Enter your ID"
+            >
+
             <label>Password</label>
-            <input type="password" id="password" required placeholder="••••••••">
-            
-            <button type="submit" style="width: 100%;">Sign In</button>
+
+            <input
+                type="password"
+                id="password"
+                required
+                placeholder="Enter your password"
+            >
+
+            <button
+                type="submit"
+                style="width: 100%;"
+            >
+                Sign In
+            </button>
+
         </form>
 
-        <div id="errorMsg" style="color: var(--danger); font-size: 13px; margin-top: 10px;"></div>
+        <div
+            id="errorMsg"
+            style="color: var(--danger); font-size: 13px; margin-top: 10px;"
+        ></div>
+
 
         <div class="test-hints">
+
             <strong>Quick Test Credentials:</strong><br>
-            • Student: <code>STU-2026-001</code> | <code>pass123</code><br>
-            • Staff: <code>STF-101</code> | <code>pass123</code><br>
-            • Admin: <code>ADM-01</code> | <code>admin123</code>
+
+            Student:
+            <code>STU-2026-001</code> |
+            <code>pass123</code>
+            <br>
+
+            Staff:
+            <code>STF-101</code> |
+            <code>pass123</code>
+            <br>
+
+            Admin:
+            <code>ADM-01</code> |
+            <code>admin123</code>
+
         </div>
+
     </div>
 
+
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const user_id = document.getElementById('userId').value.trim();
-    const password = document.getElementById('password').value;
-    const errorMsg = document.getElementById('errorMsg');
 
-    errorMsg.innerText = "";
+        document
+            .getElementById('loginForm')
+            .addEventListener('submit', async (e) => {
 
-    try {
-        const response = await fetch('http://127.0.0.1:8000/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id, password })
-        });
+                e.preventDefault();
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.detail || 'Login failed');
+                const user_id =
+                    document.getElementById('userId').value.trim();
 
-        // Store user details in localStorage
-        localStorage.setItem('care_user', JSON.stringify(data));
+                const password =
+                    document.getElementById('password').value;
 
-        // Role-based redirects
-        if (data.role === 'STUDENT') {
-            window.location.href = 'student_dashboard.html';
-        } else if (data.role === 'STAFF') {
-            window.location.href = 'staff_workspace.html';
-        } else if (data.role === 'ADMIN') {
-            window.location.href = 'admin_dashboard.html';
-        }
-    } catch (err) {
-        errorMsg.innerText = err.message;
-    }
-});
+                const errorMsg =
+                    document.getElementById('errorMsg');
+
+                errorMsg.innerText = "";
+
+
+                try {
+
+                    /*
+                     * IMPORTANT:
+                     * Use the Render server itself.
+                     * Do NOT use 127.0.0.1:8000 here.
+                     */
+
+                    const response = await fetch(
+                        '/api/auth/login',
+                        {
+                            method: 'POST',
+
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+
+                            body: JSON.stringify({
+                                user_id: user_id,
+                                password: password
+                            })
+                        }
+                    );
+
+
+                    const data = await response.json();
+
+
+                    if (!response.ok) {
+                        throw new Error(
+                            data.detail || 'Login failed'
+                        );
+                    }
+
+
+                    /*
+                     * Store logged-in user information
+                     */
+
+                    localStorage.setItem(
+                        'care_user',
+                        JSON.stringify(data)
+                    );
+
+
+                    /*
+                     * Redirect according to role
+                     */
+
+                    if (data.role === 'STUDENT') {
+
+                        window.location.href =
+                            '/student_dashboard.html';
+
+                    }
+                    else if (data.role === 'STAFF') {
+
+                        window.location.href =
+                            '/staff_workspace.html';
+
+                    }
+                    else if (data.role === 'ADMIN') {
+
+                        window.location.href =
+                            '/admin_dashboard.html';
+
+                    }
+                    else {
+
+                        errorMsg.innerText =
+                            'Unknown user role.';
+
+                    }
+
+                }
+                catch (err) {
+
+                    console.error(err);
+
+                    errorMsg.innerText =
+                        err.message;
+
+                }
+
+            });
+
     </script>
+
 </body>
 </html>
