@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from backend.app.routes import auth, complaints, admin
-from backend.app.database import initialize_database
 
 
 app = FastAPI(
@@ -12,15 +11,6 @@ app = FastAPI(
     description="Campus Management Engine for University Students & Staff",
     version="1.0.0"
 )
-
-
-# --------------------------------------------------
-# Database
-# --------------------------------------------------
-
-@app.on_event("startup")
-def startup():
-    initialize_database()
 
 
 # --------------------------------------------------
