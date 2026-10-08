@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from backend.app.routes import auth, complaints, admin
+from backend.app.database import initialize_database
 
 
 app = FastAPI(
@@ -11,6 +12,15 @@ app = FastAPI(
     description="Campus Management Engine for University Students & Staff",
     version="1.0.0"
 )
+
+
+# --------------------------------------------------
+# Database
+# --------------------------------------------------
+
+@app.on_event("startup")
+def startup():
+    initialize_database()
 
 
 # --------------------------------------------------
@@ -70,12 +80,52 @@ app.include_router(
 
 
 # --------------------------------------------------
-# Frontend Login Page
+# Login Page
 # --------------------------------------------------
 
 @app.get("/")
 def login_page(request: Request):
+
     return templates.TemplateResponse(
         request=request,
         name="login.html"
+    )
+
+
+# --------------------------------------------------
+# Student Dashboard
+# --------------------------------------------------
+
+@app.get("/student_dashboard.html")
+def student_dashboard(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="student_dashboard.html"
+    )
+
+
+# --------------------------------------------------
+# Staff Workspace
+# --------------------------------------------------
+
+@app.get("/staff_workspace.html")
+def staff_workspace(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="staff_workspace.html"
+    )
+
+
+# --------------------------------------------------
+# Admin Dashboard
+# --------------------------------------------------
+
+@app.get("/admin_dashboard.html")
+def admin_dashboard(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_dashboard.html"
     )
