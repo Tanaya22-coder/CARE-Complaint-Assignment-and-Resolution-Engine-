@@ -12,7 +12,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend integration
+
+# --------------------------------------------------
+# CORS
+# --------------------------------------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,18 +25,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve CSS and other static files
+
+# --------------------------------------------------
+# Static Files
+# --------------------------------------------------
+
 app.mount(
     "/static",
     StaticFiles(directory="frontend/static"),
     name="static"
 )
 
-# Load HTML templates
-templates = Jinja2Templates(directory="frontend/templates")
+
+# --------------------------------------------------
+# HTML Templates
+# --------------------------------------------------
+
+templates = Jinja2Templates(
+    directory="frontend/templates"
+)
 
 
-# API routes
+# --------------------------------------------------
+# API Routes
+# --------------------------------------------------
+
 app.include_router(
     auth.router,
     prefix="/api/auth",
@@ -52,10 +69,13 @@ app.include_router(
 )
 
 
-# Frontend
+# --------------------------------------------------
+# Frontend Login Page
+# --------------------------------------------------
+
 @app.get("/")
 def login_page(request: Request):
     return templates.TemplateResponse(
-        "login.html",
-        {"request": request}
+        request=request,
+        name="login.html"
     )
